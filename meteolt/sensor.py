@@ -39,17 +39,21 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Meteo.lt sensors based on a config entry."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    # Get coordinators from hass data
+    coordinators = hass.data[DOMAIN][entry.entry_id]
+    forecast_coordinator = coordinators["forecast_coordinator"]
+    observations_coordinator = coordinators["observations_coordinator"]
+    hydro_coordinator = coordinators["hydro_coordinator"]
 
     entities = []
 
     # Add forecast sensors
-    if coordinator.data.get("forecast"):
+    if forecast_coordinator.data.get("forecast"):
         for sensor_type, sensor_info in SENSOR_TYPES.items():
             if sensor_type not in ["water_level", "water_temperature", "water_discharge"]:
                 entities.append(
                     MeteoLTSensor(
-                        coordinator,
+                        forecast_coordinator,
                         entry,
                         sensor_type,
                         sensor_info,
@@ -58,12 +62,15 @@ async def async_setup_entry(
                 )
 
     # Add observation sensors if station is configured
-    if coordinator.data.get("observations") and entry.data.get(CONF_STATION) != "none":
+    if (
+        entry.data.get(CONF_STATION) != "none"
+        and observations_coordinator.data.get("observations")
+    ):
         for sensor_type, sensor_info in SENSOR_TYPES.items():
             if sensor_type not in ["water_level", "water_temperature", "water_discharge"]:
                 entities.append(
                     MeteoLTSensor(
-                        coordinator,
+                        observations_coordinator,
                         entry,
                         sensor_type,
                         sensor_info,
@@ -72,18 +79,29 @@ async def async_setup_entry(
                 )
 
     # Add hydro observation sensors if hydro station is configured
-    if coordinator.data.get("hydro") and entry.data.get(CONF_HYDRO_STATION) != "none":
+    if (
+        entry.data.get(CONF_HYDRO_STATION) != "none"
+        and hydro_coordinator.data.get("hydro")
+    ):
         for sensor_type, sensor_info in SENSOR_TYPES.items():
             if sensor_type in ["water_level", "water_temperature", "water_discharge"]:
                 entities.append(
                     MeteoLTSensor(
-                        coordinator,
+                        hydro_coordinator,
                         entry,
                         sensor_type,
                         sensor_info,
                         "hydro"
                     )
                 )
+
+    _LOGGER.debug(
+        "Adding %d sensors (%d forecast, %d observations, %d hydro)",
+        len(entities),
+        sum(1 for e in entities if e._data_type == "forecast"),
+        sum(1 for e in entities if e._data_type == "observations"),
+        sum(1 for e in entities if e._data_type == "hydro"),
+    )
 
     async_add_entities(entities)
 

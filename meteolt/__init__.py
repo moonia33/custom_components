@@ -12,6 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
     DataUpdateCoordinator,
     UpdateFailed,
 )
@@ -41,6 +42,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Create data update coordinators
     async def async_update_forecast() -> dict[str, Any]:
         """Fetch forecast data from API."""
+        _LOGGER.debug("Updating forecast data")
         try:
             place_code = entry.data[CONF_PLACE]
             forecast = await client.get_place_forecast(place_code)
@@ -50,18 +52,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     async def async_update_observations() -> dict[str, Any]:
         """Fetch observation data from API."""
+        _LOGGER.debug("Updating observation data")
         try:
             station_code = entry.data[CONF_STATION]
             if station_code and station_code != "none":
                 observations = await client.get_station_observations(station_code)
                 return {"observations": observations}
-            return {}
+            return {"observations": None}
         except MeteoLTApiError as err:
             raise UpdateFailed(
                 f"Error fetching observation data: {err}") from err
 
     async def async_update_hydro() -> dict[str, Any]:
         """Fetch hydro data from API."""
+        _LOGGER.debug("Updating hydro data")
         try:
             hydro_station = entry.data[CONF_HYDRO_STATION]
             if hydro_station and hydro_station != "none":
@@ -70,7 +74,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     observation_type="measured"
                 )
                 return {"hydro": hydro_data}
-            return {}
+            return {"hydro": None}
         except MeteoLTApiError as err:
             raise UpdateFailed(f"Error fetching hydro data: {err}") from err
 
@@ -100,19 +104,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     # Fetch initial data
-    await asyncio.gather(
-        forecast_coordinator.async_config_entry_first_refresh(),
-        observations_coordinator.async_config_entry_first_refresh(),
-        hydro_coordinator.async_config_entry_first_refresh(),
-    )
+    await forecast_coordinator.async_config_entry_first_refresh()
+    await observations_coordinator.async_config_entry_first_refresh()
+    await hydro_coordinator.async_config_entry_first_refresh()
 
     if not forecast_coordinator.last_update_success:
         raise ConfigEntryNotReady("Failed to fetch initial forecast data")
 
-    # Store coordinators
+    # Store coordinator
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {
-        "client": client,
         "forecast_coordinator": forecast_coordinator,
         "observations_coordinator": observations_coordinator,
         "hydro_coordinator": hydro_coordinator,
