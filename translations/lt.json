@@ -1,0 +1,63 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Meteo.lt sąranka",
+        "description": "Pasirinkite vietovę, meteorologijos stotį ir hidrologijos stotį",
+        "data": {
+          "place": "Vietovė",
+          "station": "Meteorologijos stotis",
+          "hydro_station": "Hidrologijos stotis"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nepavyko prisijungti prie Meteo.lt API",
+      "invalid_place": "Netinkama vietovė",
+      "invalid_station": "Netinkama meteorologijos stotis",
+      "invalid_hydro_station": "Netinkama hidrologijos stotis",
+      "unknown": "Nenumatyta klaida"
+    },
+    "abort": {
+      "already_configured": "Ši vietovė jau sukonfigūruota"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "condition": {
+        "state": {
+          "clear": "Giedra",
+          "partly-cloudy": "Mažai debesuota",
+          "cloudy-with-sunny-intervals": "Debesuota su pragiedruliais",
+          "cloudy": "Debesuota",
+          "light-rain": "Nedidelis lietus",
+          "rain": "Lietus",
+          "heavy-rain": "Smarkus lietus",
+          "thunder": "Perkūnija",
+          "isolated-thunderstorms": "Trumpas lietus su perkūnija",
+          "thunderstorms": "Lietus su perkūnija",
+          "heavy-rain-with-thunderstorms": "Smarkus lietus su perkūnija",
+          "light-sleet": "Nedidelė šlapdriba",
+          "sleet": "Šlapdriba",
+          "freezing-rain": "Lijundra",
+          "hail": "Kruša",
+          "light-snow": "Nedidelis sniegas",
+          "snow": "Sniegas",
+          "heavy-snow": "Smarkus sniegas",
+          "fog": "Rūkas",
+          "variable-cloudiness": "Nepastoviai debesuota",
+          "rain-showers": "Trumpas lietus",
+          "light-rain-at-times": "Protarpiais nedidelis lietus",
+          "rain-at-times": "Protarpiais lietus",
+          "sleet-showers": "Trumpa šlapdriba",
+          "sleet-at-times": "Protarpiais šlapdriba",
+          "snow-showers": "Trumpas sniegas",
+          "light-snow-at-times": "Protarpiais nedidelis sniegas",
+          "snow-at-times": "Protarpiais sniegas",
+          "snowstorm": "Pūga",
+          "squall": "Škvalas"
+        }
+      }
+    }
+  }
+}
